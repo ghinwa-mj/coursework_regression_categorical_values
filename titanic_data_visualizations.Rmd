@@ -1,0 +1,145 @@
+---
+title: "titanic_data_visualizations"
+author: "Ghinwa Moujaes"
+date: "15/03/2022"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(dplyr)
+```
+
+```{r message=FALSE, warning=FALSE}
+rm(list = ls())
+
+df <- read_csv("../data/Titanic_Data/titanic.csv")
+```
+
+1. Percentage of Males vs. Percentage of Females
+```{r}
+windowsFonts(Times=windowsFont("TT Times New Roman"))
+
+
+df %>% 
+  group_by(Sex) %>% 
+  summarise(count = n()) %>% 
+  mutate(percentage = count/sum(count)) %>% 
+  ggplot(aes(x = Sex, y = percentage)) + 
+  geom_col(aes(fill = as.factor(Sex))) + 
+  geom_text(aes(label = sprintf("%.1f%%", 100*percentage), y= percentage),  
+            vjust = -1,
+            hjust = 0.5,
+            size = 5,
+            col = "grey",
+            fontface = "bold") +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 16),
+        axis.ticks.y = element_blank(),
+       legend.position = "none") + 
+  ylim(0, 1) + 
+  labs(title = "Percentage of Female vs. Male Passengers on the Titanic", 
+       x = "", 
+       y = "") + 
+  scale_x_discrete(labels = c("Female", "Male"))
+```
+```{r}
+windowsFonts(Times=windowsFont("TT Times New Roman"))
+
+df %>%  
+  group_by(Survived, Sex) %>% 
+  summarise(count = n()) %>% 
+  ungroup() %>% 
+  mutate(percentage = count/sum(count)*100) %>% 
+  ggplot(aes(x = factor(Survived), y = percentage)) + 
+  geom_col(aes(fill = factor(Sex)), position = "dodge", stat = "identity") + 
+  theme_classic() + 
+  labs(title = "Percentage of Survivors: Male vs. Female", 
+       y = "", 
+       x = "", 
+       fill = "") + 
+  theme(plot.title = element_text(hjust = 0.5, size = 14)) + 
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0, 60)) + 
+  scale_x_discrete(labels = c("Did not Survive", "Survived")) + 
+  scale_fill_discrete(labels = c("Female", "Male")) + 
+    geom_text(aes(label = sprintf("%.1f%%", percentage), y= percentage),  
+            size = 4,
+            col = "black",
+            fontface = "bold",
+            vjust = -0.5,
+            hjust = c(1.75, -1, 1.75, -1))
+```
+
+```{r}
+df %>% 
+  ggplot(aes(x = Sex, y = Age)) + 
+  geom_boxplot(outlier.color = NA) + 
+  geom_point(aes(col = as.factor(Sex)),
+             position = "jitter",
+             alpha = 0.5) + 
+  scale_x_discrete(labels = c("Female", "Male")) + 
+  labs(title = "Age of Female vs. Male Passengers",
+       x = "") + 
+  theme_classic() + 
+  theme(plot.title = element_text(hjust= 0.5), 
+        legend.position = "None") + 
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0, 90)) 
+```
+
+```{r}
+df %>%
+  ggplot(aes(x = Age, col = factor(Sex))) +
+  geom_density() +
+  facet_grid(Survived ~ Sex,
+             labeller = labeller(Sex = c(female = "Female",
+                                         male = "Male"),
+                                 Survived = c("0" = "Did not Survive",                            
+                                              "1" = "Survived")), 
+             ) +
+  theme_classic() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "",
+       y = "Density",
+       title = "Age Distribution of Female vs. Male Survivors vs. Non-Survivors")
+
+```
+
+```{r}
+df %>% 
+  ggplot(aes(x = `Siblings/Spouses Aboard`, 
+             fill = factor(Survived))) + 
+  geom_bar() + 
+  facet_wrap(~Survived,
+             labeller = labeller(Survived = c("0" = "Did not Survive",
+                                              "1" = "Survived"))) + 
+  theme_classic() + 
+  theme(legend.position = "none") + 
+  labs(x = "Number of Passengers", 
+       y = "Siblings") + 
+  scale_fill_manual(values = c("darkblue", "darkred"))
+
+```
+
+```{r}
+df %>%
+  filter(Fare < 300) %>% 
+  ggplot(aes(x = Fare, fill = factor(Sex))) +
+  geom_histogram(bins = 15) +
+  geom_freqpoly(col="black",size=1) + 
+  facet_grid(~ Sex,
+             labeller = labeller(Sex = c(female = "Female",
+                                         male = "Male"))) +
+  theme_classic() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Rate",
+       y = "Number of Passengers",
+       title = "Rate Distribution of Female vs. Male Passengers")
+```
+ 
+ 
