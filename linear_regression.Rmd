@@ -1,0 +1,80 @@
+---
+title: "Linear Regression"
+author: "Ghinwa Moujaes"
+date: "22/03/2022"
+output: html_document
+---
+
+```{r}
+rm(list = ls())
+library(dplyr)
+library(tidyverse)
+library(texreg)
+
+df <- read_csv("../data/Titanic_Data/titanic.csv")
+```
+
+```{r}
+df$male[df$Sex=="male"] <- 1 
+df$male[df$Sex=="female"] <- 0 
+```
+
+1. Estimate a linear model for Fare using Age as continuous predictor
+
+```{r}
+model_1 <- lm(Fare ~ Age, data=df)
+summary(model_1)
+```
+
+Estimate a linear model only including the Sex as categorical predictor/dummy variable (Model 2)
+```{r}
+model_v2 <- lm(Fare ~ male, data = df)
+summary(model_v2)
+```
+
+Estimate a linear model including both predictors simultaneously (Model 3)
+```{r}
+model_v3 <- lm(Fare ~ male + Age, data = df)
+summary(model_v3)
+```
+What do the slope coefficients mean?
+
+1. On average, male fares were 20 units cheaper then female fares
+2. On average, one additional year in a passenger's age is correlated with a higher fare of 0.45 units
+
+Compare slope coefficients across the models: Do they change? How?
+- In the full model, both coefficients slightly change in value (age increases, male decreases) but their significance stays the same 
+
+Estimate a linear regression regressing the continuous predictor on the categorical predictor (dummy variable). (Model 4)
+
+```{r}
+model_v4 <- lm(Age ~ male, data = df)
+summary(model_v4)
+```
+Calculate and save the residuals. Use these residuals as a predictor of the dependent variable Fare
+
+```{r}
+df$residual_age_male <- resid(model_v4)
+
+model_v5 <- lm(Fare ~ residual_age_male, data = df)
+summary(model_v5)
+```
+
+Estimate a linear regression regressing the dummy predictor on the continuous predictor
+```{r}
+model_v6 <- lm(male ~ Age, data = df)
+summary(model_v6)
+```
+
+Calculate and save the residuals. Use these residuals as a predictor of the dependent variable Fare.
+```{r}
+df$residual_male_age <- resid(model_v6)
+
+model_v7 <- lm(Fare ~ residual_male_age, data = df)
+summary(model_v7)
+```
+
+```{r}
+screenreg(c(model_v3, model_v5, model_v7))
+```
+
